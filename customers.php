@@ -7,7 +7,9 @@ $customersList = simplexml_load_string($response);
 
 function getCustomerDetails($url) {
     // Obtener detalles del cliente con una llamada individual
-    return simplexml_load_string(callAPI('GET', $url));
+    $result = callAPI('GET', str_replace('http://localhost:8080/prestashop/api/', '', $url));
+    var_dump($result); // Depuración
+    return simplexml_load_string($result);
 }
 
 $customers = [];
@@ -15,12 +17,16 @@ if ($customersList && isset($customersList->customer)) {
     foreach ($customersList->customer as $customer) {
         // Obtener detalles completos de cada cliente
         $customerDetails = getCustomerDetails($customer['xlink:href']);
-        $customers[] = [
-            'id' => (string)$customerDetails->id,
-            'firstname' => (string)$customerDetails->firstname,
-            'lastname' => (string)$customerDetails->lastname,
-            'email' => (string)$customerDetails->email
-        ];
+        if ($customerDetails) {
+            $customers[] = [
+                'id' => (string)$customerDetails->id,
+                'firstname' => (string)$customerDetails->firstname,
+                'lastname' => (string)$customerDetails->lastname,
+                'email' => (string)$customerDetails->email
+            ];
+        } else {
+            echo "No se pudieron obtener detalles para el cliente ID: " . $customer['id'];
+        }
     }
 }
 ?>

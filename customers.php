@@ -35,40 +35,66 @@ $customers = simplexml_load_string($response);
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Gestión de Clientes</h1>
+    <div class="container mt-5">
+        <h1 class="text-center">Gestión de Clientes</h1>
 
-    <!-- Formulario para crear cliente -->
-    <h2>Crear Cliente</h2>
-    <form method="POST" action="customers.php">
-        <label>Nombre:</label>
-        <input type="text" name="firstname" required>
-        <label>Apellido:</label>
-        <input type="text" name="lastname" required>
-        <label>Email:</label>
-        <input type="email" name="email" required>
-        <button type="submit">Crear Cliente</button>
-    </form>
+        <!-- Formulario para crear cliente -->
+        <div class="card mt-3">
+            <div class="card-header">Crear Cliente</div>
+            <div class="card-body">
+                <form method="POST" action="customers.php">
+                    <div class="mb-3">
+                        <label>Nombre</label>
+                        <input type="text" name="firstname" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Apellido</label>
+                        <input type="text" name="lastname" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear Cliente</button>
+                </form>
+            </div>
+        </div>
 
-    <!-- Lista de clientes -->
-    <h2>Lista de Clientes</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Email</th>
-        </tr>
-        <?php foreach ($customers->customer as $customer): ?>
-        <tr>
-            <td><?= $customer['id'] ?></td>
-            <td><?= $customer->firstname ?></td>
-            <td><?= $customer->lastname ?></td>
-            <td><?= $customer->email ?></td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
+        <!-- Lista de clientes -->
+        <h2 class="mt-5">Lista de Clientes</h2>
+        <table class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($customers && isset($customers->customer)): ?>
+                    <?php foreach ($customers->customer as $customer): ?>
+                    <tr>
+                        <td><?= $customer['id'] ?></td>
+                        <td><?= $customer->firstname ?></td>
+                        <td><?= $customer->lastname ?></td>
+                        <td><?= $customer->email ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="text-center">No se encontraron clientes.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

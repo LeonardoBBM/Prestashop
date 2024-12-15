@@ -7,7 +7,7 @@ function callAPI($method, $endpoint, $data = null) {
 
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Basic ' . base64_encode(API_KEY . ':'),
+        'Authorization: Basic ' . base64_encode(API_KEY . ':'), 
         'Content-Type: application/xml'
     ]);
 
@@ -29,8 +29,8 @@ function callAPI($method, $endpoint, $data = null) {
     if (curl_errno($ch)) {
         echo 'Error en cURL: ' . curl_error($ch);
     }
-
     curl_close($ch);
+
     return $response;
 }
 ?>

@@ -60,9 +60,12 @@ if ($customers === false) {
                     <?php if (isset($customers->customer)): ?>
                         <?php foreach ($customers->customer as $customer): ?>
                         <?php
-                            // Obtener datos de cada cliente con una petición GET específica
+                            // Realizar una petición individual para obtener los detalles del cliente
                             $customerDetails = callAPI('GET', 'customers/' . $customer['id']);
                             $details = simplexml_load_string($customerDetails);
+
+                            // Validar que los datos existan antes de mostrarlos
+                            if ($details && $details->firstname && $details->lastname && $details->email):
                         ?>
                         <tr>
                             <td><?= htmlspecialchars($customer['id']) ?></td>
@@ -70,6 +73,7 @@ if ($customers === false) {
                             <td><?= htmlspecialchars($details->lastname) ?></td>
                             <td><?= htmlspecialchars($details->email) ?></td>
                         </tr>
+                        <?php endif; ?>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>

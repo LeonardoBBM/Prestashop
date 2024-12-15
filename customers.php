@@ -1,17 +1,31 @@
 <?php
-include 'utils.php';
+include 'config.php';
 
 // Listar todos los clientes
-$customers = callAPI('customers');
-
-echo "<h1>Lista de Clientes</h1>";
-echo "<table border='1'>";
-echo "<tr><th>ID</th><th>Link</th></tr>";
-foreach ($customers->customer as $customer) {
-    echo "<tr>";
-    echo "<td>" . $customer['id'] . "</td>";
-    echo "<td><a href='" . $customer['xlink:href'] . "'>Ver Detalle</a></td>";
-    echo "</tr>";
-}
-echo "</table>";
+$customers = callAPI('GET', 'customers');
+$xml = simplexml_load_string($customers);
 ?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Clientes</title>
+</head>
+<body>
+    <h1>Gestión de Clientes</h1>
+    <h2>Lista de Clientes</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Enlace</th>
+        </tr>
+        <?php foreach ($xml->customer as $customer): ?>
+            <tr>
+                <td><?= $customer['id'] ?></td>
+                <td><a href="<?= $customer['xlink:href'] ?>">Ver</a></td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+</body>
+</html>

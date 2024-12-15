@@ -1,50 +1,81 @@
 <?php
-include 'api.php';
+include 'config.php';
+
+echo "Pantalla customers";
+
+// Crear un nuevo cliente si se envía el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $email = $_POST['email'];
+
+    $xml = <<<EOD
+<prestashop>
+  <customer>
+    <id_default_group><![CDATA[3]]></id_default_group>
+    <id_lang><![CDATA[1]]></id_lang>
+    <firstname><![CDATA[$firstname]]></firstname>
+    <lastname><![CDATA[$lastname]]></lastname>
+    <email><![CDATA[$email]]></email>
+    <passwd><![CDATA[password123]]></passwd>
+    <active><![CDATA[1]]></active>
+  </customer>
+</prestashop>
+EOD;
+
+    $result = makeApiRequest('customers', 'POST', $xml);
+    header("Location: customers.php");
+    exit;
+}
 
 // Obtener la lista de clientes
-$response = callAPI('GET', 'customers');
-$customersList = simplexml_load_string($response);
+$response = makeApiRequest('customers');
 
-function getCustomerDetails($url) {
-    // Obtener detalles del cliente con una llamada individual
-    $result = callAPI('GET', str_replace('http://localhost:8080/prestashop/api/', '', $url));
-    var_dump($result); // Depuración
-    return simplexml_load_string($result);
+if (isset($response->error)) {
+    echo "<pre>Error: {$response['error']}</pre>";
+    echo "<pre>HTTP Code: {$response['http_code']}</pre>";
+    echo "<pre>Response: {$response['response']}</pre>";
+    exit;
 }
 
-$customers = [];
-if ($customersList && isset($customersList->customer)) {
-    foreach ($customersList->customer as $customer) {
-        // Obtener detalles completos de cada cliente
-        $customerDetails = getCustomerDetails($customer['xlink:href']);
-        if ($customerDetails) {
-            $customers[] = [
-                'id' => (string)$customerDetails->id,
-                'firstname' => (string)$customerDetails->firstname,
-                'lastname' => (string)$customerDetails->lastname,
-                'email' => (string)$customerDetails->email
-            ];
-        } else {
-            echo "No se pudieron obtener detalles para el cliente ID: " . $customer['id'];
-        }
-    }
-}
+$customers = $response;
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="text-center">Gestión de Clientes</h1>
+    <h1 class="mb-4">Gestión de Clientes</h1>
+
+    <!-- Formulario para crear cliente -->
+    <h2>Crear Cliente</h2>
+    <form method="POST" action="customers.php" class="mb-4">
+        <div class="row mb-3">
+            <div class="col">
+                <label>Nombre:</label>
+                <input type="text" name="firstname" class="form-control" required>
+            </div>
+            <div class="col">
+                <label>Apellido:</label>
+                <input type="text" name="lastname" class="form-control" required>
+            </div>
+            <div class="col">
+                <label>Email:</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Cliente</button>
+    </form>
+
+    <!-- Lista de clientes -->
     <h2>Lista de Clientes</h2>
-    <table class="table table-bordered mt-3">
-        <thead class="table-dark">
+    <table class="table table-striped">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
@@ -53,20 +84,14 @@ if ($customersList && isset($customersList->customer)) {
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($customers)): ?>
-                <?php foreach ($customers as $customer): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($customer['id']); ?></td>
-                        <td><?= htmlspecialchars($customer['firstname']); ?></td>
-                        <td><?= htmlspecialchars($customer['lastname']); ?></td>
-                        <td><?= htmlspecialchars($customer['email']); ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="4" class="text-center">No se encontraron clientes</td>
-                </tr>
-            <?php endif; ?>
+            <?php foreach ($customers->customer as $customer): ?>
+            <tr>
+                <td><?= $customer['id'] ?></td>
+                <td><?= $customer->firstname ?></td>
+                <td><?= $customer->lastname ?></td>
+                <td><?= $customer->email ?></td>
+            </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
 </div>

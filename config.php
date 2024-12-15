@@ -1,7 +1,7 @@
 <?php
 // Configuración básica de la API de PrestaShop
 define('BASE_URL', 'http://localhost:8080/prestashop/api/');
-define('API_KEY', 'MGEU9V95CGNSWTBNMEUC4Q5U1DKFLFYT'); // Reemplaza con tu clave de API
+define('API_KEY', 'MGEU9V95CGNSWTBNMEUC4Q5U1DKFLFYT');
 
 // Función para realizar peticiones a la API
 function callAPI($method, $endpoint, $data = null) {

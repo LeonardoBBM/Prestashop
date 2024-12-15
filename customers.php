@@ -1,7 +1,12 @@
 <?php
-include 'config.php';
+include 'api.php';
 
-function createCustomer($firstname, $lastname, $email) {
+// Crear un nuevo cliente si se envía el formulario
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $email = $_POST['email'];
+
     $xml = <<<EOD
 <prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
   <customer>
@@ -16,39 +21,21 @@ function createCustomer($firstname, $lastname, $email) {
 </prestashop>
 EOD;
 
-    return callAPI('POST', 'customers', $xml);
-}
-
-function deleteCustomer($id) {
-    return callAPI('DELETE', "customers/$id");
-}
-
-// Crear cliente
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
-    $email = $_POST['email'];
-    createCustomer($firstname, $lastname, $email);
+    $result = callAPI('POST', 'customers', $xml);
     header("Location: customers.php");
+    exit;
 }
 
-// Eliminar cliente
-if (isset($_GET['delete_id'])) {
-    $id = $_GET['delete_id'];
-    deleteCustomer($id);
-    header("Location: customers.php");
-}
-
-// Obtener la lista actualizada de clientes
-$customers = callAPI('GET', 'customers');
-$xml = simplexml_load_string($customers);
+// Obtener la lista de clientes
+$response = callAPI('GET', 'customers');
+$customers = simplexml_load_string($response);
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gestión de Clientes</title>
+    <title>Clientes</title>
 </head>
 <body>
     <h1>Gestión de Clientes</h1>
@@ -56,35 +43,31 @@ $xml = simplexml_load_string($customers);
     <!-- Formulario para crear cliente -->
     <h2>Crear Cliente</h2>
     <form method="POST" action="customers.php">
-        <label for="firstname">Nombre:</label>
+        <label>Nombre:</label>
         <input type="text" name="firstname" required>
-        <label for="lastname">Apellido:</label>
+        <label>Apellido:</label>
         <input type="text" name="lastname" required>
-        <label for="email">Correo Electrónico:</label>
+        <label>Email:</label>
         <input type="email" name="email" required>
-        <button type="submit" name="create">Crear Cliente</button>
+        <button type="submit">Crear Cliente</button>
     </form>
 
-    <!-- Tabla de clientes -->
+    <!-- Lista de clientes -->
     <h2>Lista de Clientes</h2>
     <table border="1">
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Apellido</th>
-            <th>Correo</th>
-            <th>Acciones</th>
+            <th>Email</th>
         </tr>
-        <?php foreach ($xml->customer as $customer): ?>
-            <tr>
-                <td><?= $customer['id'] ?></td>
-                <td><?= $customer->firstname ?? 'N/A' ?></td>
-                <td><?= $customer->lastname ?? 'N/A' ?></td>
-                <td><?= $customer->email ?? 'N/A' ?></td>
-                <td>
-                    <a href="customers.php?delete_id=<?= $customer['id'] ?>" onclick="return confirm('¿Eliminar este cliente?');">Eliminar</a>
-                </td>
-            </tr>
+        <?php foreach ($customers->customer as $customer): ?>
+        <tr>
+            <td><?= $customer['id'] ?></td>
+            <td><?= $customer->firstname ?></td>
+            <td><?= $customer->lastname ?></td>
+            <td><?= $customer->email ?></td>
+        </tr>
         <?php endforeach; ?>
     </table>
 </body>

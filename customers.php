@@ -1,8 +1,6 @@
 <?php
 include 'config.php';
 
-echo "Pantalla customers";
-
 // Crear un nuevo cliente si se envía el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $firstname = $_POST['firstname'];
@@ -10,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
 
     $xml = <<<EOD
-<prestashop>
+<prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
   <customer>
     <id_default_group><![CDATA[3]]></id_default_group>
     <id_lang><![CDATA[1]]></id_lang>
@@ -23,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </prestashop>
 EOD;
 
-    $result = makeApiRequest('customers', 'POST', $xml);
+    $response = makeApiRequest('customers', 'POST', $xml);
     header("Location: customers.php");
     exit;
 }
@@ -31,69 +29,84 @@ EOD;
 // Obtener la lista de clientes
 $response = makeApiRequest('customers');
 
-if (isset($response->error)) {
-    echo "<pre>Error: {$response['error']}</pre>";
-    echo "<pre>HTTP Code: {$response['http_code']}</pre>";
-    echo "<pre>Response: {$response['response']}</pre>";
+// Depurar respuesta cruda para verificar que llega correctamente
+echo "<pre>";
+var_dump($response);
+echo "</pre>";
+
+$customers = simplexml_load_string($response);
+if ($customers === false) {
+    echo "Error al convertir XML:";
+    print_r(libxml_get_errors());
     exit;
 }
-
-$customers = $response;
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Clientes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes</title>
+    <!-- Integración de Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-<div class="container mt-5">
-    <h1 class="mb-4">Gestión de Clientes</h1>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Gestión de Clientes</h1>
 
-    <!-- Formulario para crear cliente -->
-    <h2>Crear Cliente</h2>
-    <form method="POST" action="customers.php" class="mb-4">
-        <div class="row mb-3">
-            <div class="col">
-                <label>Nombre:</label>
-                <input type="text" name="firstname" class="form-control" required>
-            </div>
-            <div class="col">
-                <label>Apellido:</label>
-                <input type="text" name="lastname" class="form-control" required>
-            </div>
-            <div class="col">
-                <label>Email:</label>
-                <input type="email" name="email" class="form-control" required>
+        <!-- Formulario para crear cliente -->
+        <div class="card mb-4">
+            <div class="card-header">Crear Cliente</div>
+            <div class="card-body">
+                <form method="POST" action="customers.php">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="firstname">Nombre</label>
+                            <input type="text" class="form-control" name="firstname" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="lastname">Apellido</label>
+                            <input type="text" class="form-control" name="lastname" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear Cliente</button>
+                </form>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Crear Cliente</button>
-    </form>
 
-    <!-- Lista de clientes -->
-    <h2>Lista de Clientes</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Email</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($customers->customer as $customer): ?>
-            <tr>
-                <td><?= $customer['id'] ?></td>
-                <td><?= $customer->firstname ?></td>
-                <td><?= $customer->lastname ?></td>
-                <td><?= $customer->email ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+        <!-- Tabla de clientes -->
+        <h2>Lista de Clientes</h2>
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (isset($customers->customer)): ?>
+                    <?php foreach ($customers->customer as $customer): ?>
+                        <tr>
+                            <td><?= isset($customer['id']) ? $customer['id'] : 'N/A' ?></td>
+                            <td><?= isset($customer->firstname) ? $customer->firstname : 'N/A' ?></td>
+                            <td><?= isset($customer->lastname) ? $customer->lastname : 'N/A' ?></td>
+                            <td><?= isset($customer->email) ? $customer->email : 'N/A' ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="4" class="text-center">No se encontraron clientes</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>

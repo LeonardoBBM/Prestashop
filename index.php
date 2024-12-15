@@ -1,3 +1,26 @@
+<?php
+// Configuración de la API
+$apiUrl = "http://localhost:8080/prestashop/api";
+$apiKey = "MGEU9V95CGNSWTBNMEUC4Q5U1DKFLFYT";
+
+// Función para consumir la API
+function callAPI($endpoint) {
+    global $apiUrl, $apiKey;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "$apiUrl/$endpoint");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Basic ' . base64_encode("$apiKey:")
+    ]);
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return simplexml_load_string($response);
+}
+
+// Obtener la lista de clientes
+$customers = callAPI('customers');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>

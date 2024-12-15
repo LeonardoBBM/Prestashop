@@ -1,6 +1,11 @@
 <?php
 include 'config.php';
 
+echo "<pre>";
+$response = callAPI('customers');
+var_dump($response); // Imprime para verificar si se recibe el XML correctamente
+echo "</pre>";
+
 // Crear un nuevo cliente si se envía el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $xml = <<<EOD
@@ -22,8 +27,17 @@ EOD;
     exit;
 }
 
-// Obtener la lista de clientes
-$response = callAPI('customers');
+// Si el XML es válido, obtener los clientes
+$customers = [];
+if ($response && $response->customers) {
+    foreach ($response->customers->customer as $customer) {
+        // Realizar una nueva solicitud para cada cliente
+        $customerDetails = callAPI("customers/{$customer['id']}");
+        if ($customerDetails) {
+            $customers[] = $customerDetails->customer;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -35,22 +49,24 @@ $response = callAPI('customers');
 </head>
 <body>
 <div class="container">
-    <h1 class="mt-4 mb-4">Gestión de Clientes</h1>
+    <h1 class="mt-4 mb-4 text-center">Gestión de Clientes</h1>
 
     <!-- Formulario para crear cliente -->
     <h2>Crear Cliente</h2>
     <form method="POST" class="mb-4">
-        <div class="mb-3">
-            <label class="form-label">Nombre:</label>
-            <input type="text" name="firstname" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Apellido:</label>
-            <input type="text" name="lastname" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email:</label>
-            <input type="email" name="email" class="form-control" required>
+        <div class="row mb-3">
+            <div class="col">
+                <label class="form-label">Nombre:</label>
+                <input type="text" name="firstname" class="form-control" required>
+            </div>
+            <div class="col">
+                <label class="form-label">Apellido:</label>
+                <input type="text" name="lastname" class="form-control" required>
+            </div>
+            <div class="col">
+                <label class="form-label">Email:</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">Crear Cliente</button>
     </form>
@@ -67,10 +83,10 @@ $response = callAPI('customers');
             </tr>
         </thead>
         <tbody>
-            <?php if ($response && $response->customer): ?>
-                <?php foreach ($response->customer as $customer): ?>
+            <?php if (!empty($customers)): ?>
+                <?php foreach ($customers as $customer): ?>
                 <tr>
-                    <td><?= $customer['id'] ?></td>
+                    <td><?= $customer->id ?></td>
                     <td><?= $customer->firstname ?></td>
                     <td><?= $customer->lastname ?></td>
                     <td><?= $customer->email ?></td>
@@ -78,7 +94,7 @@ $response = callAPI('customers');
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="4">No se encontraron clientes</td>
+                    <td colspan="4" class="text-center">No se encontraron clientes</td>
                 </tr>
             <?php endif; ?>
         </tbody>

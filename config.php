@@ -1,35 +1,36 @@
 <?php
-// Definir la URL completa de la API de PrestaShop
+// Configuración básica de la API de PrestaShop
 define('API_URL', 'http://localhost:8080/prestashop/api/');
 define('API_KEY', 'MGEU9V95CGNSWTBNMEUC4Q5U1DKFLFYT');
 
-// Función para realizar solicitudes a la API de PrestaShop
-function makeApiRequest($endpoint, $method = 'GET', $data = null) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, API_URL . $endpoint);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_USERPWD, API_KEY . ':');
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/xml'
+// Función para llamar a la API
+function callAPI($endpoint, $method = 'GET', $data = null) {
+    $url = API_URL . $endpoint;
+    $curl = curl_init();
+
+    $headers = ['Authorization: Basic ' . base64_encode(API_KEY . ':')];
+
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_FAILONERROR => true,
     ]);
 
-    // Configurar método y datos si es POST o PUT
     if ($method === 'POST' || $method === 'PUT') {
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $headers[] = 'Content-Type: application/xml';
     }
 
-    // Ejecutar la solicitud
-    $response = curl_exec($ch);
+    $response = curl_exec($curl);
 
-    // Manejar errores
-    if (curl_errno($ch)) {
-        echo 'Error en cURL: ' . curl_error($ch);
+    // Manejo de errores
+    if (curl_errno($curl)) {
+        echo "cURL Error: " . curl_error($curl);
     }
 
-    curl_close($ch);
-
-    // Devolver la respuesta
-    return $response;
+    curl_close($curl);
+    return simplexml_load_string($response);
 }
 ?>

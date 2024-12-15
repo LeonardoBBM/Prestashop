@@ -3,22 +3,26 @@ include 'api.php';
 
 // Obtener la lista de clientes
 $response = callAPI('GET', 'customers');
+$customersList = simplexml_load_string($response);
 
-// Mostrar la respuesta XML para depuración
-echo "<pre>";
-var_dump($response);
-echo "</pre>";
-
-// Cargar XML
-$customers = simplexml_load_string($response);
-
-// Depuración de estructura
-if ($customers === false) {
-    echo "Error: No se pudo cargar el XML.";
-    exit;
+function getCustomerDetails($url) {
+    // Obtener detalles del cliente con una llamada individual
+    return simplexml_load_string(callAPI('GET', $url));
 }
 
-// Intenta acceder a los nodos "customer" directamente
+$customers = [];
+if ($customersList && isset($customersList->customer)) {
+    foreach ($customersList->customer as $customer) {
+        // Obtener detalles completos de cada cliente
+        $customerDetails = getCustomerDetails($customer['xlink:href']);
+        $customers[] = [
+            'id' => (string)$customerDetails->id,
+            'firstname' => (string)$customerDetails->firstname,
+            'lastname' => (string)$customerDetails->lastname,
+            'email' => (string)$customerDetails->email
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -32,8 +36,9 @@ if ($customers === false) {
 <body>
 <div class="container mt-5">
     <h1 class="text-center">Gestión de Clientes</h1>
+    <h2>Lista de Clientes</h2>
     <table class="table table-bordered mt-3">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
@@ -42,31 +47,20 @@ if ($customers === false) {
             </tr>
         </thead>
         <tbody>
-            <?php
-            // Intentar acceder a los clientes
-            if (isset($customers->customers->customer)) {
-                foreach ($customers->customers->customer as $customer) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($customer['id']) . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->firstname ?? 'N/A') . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->lastname ?? 'N/A') . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->email ?? 'N/A') . "</td>";
-                    echo "</tr>";
-                }
-            } elseif (isset($customers->customer)) {
-                // Si los clientes no están anidados en "customers"
-                foreach ($customers->customer as $customer) {
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($customer['id']) . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->firstname ?? 'N/A') . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->lastname ?? 'N/A') . "</td>";
-                    echo "<td>" . htmlspecialchars($customer->email ?? 'N/A') . "</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='4' class='text-center'>No se encontraron clientes</td></tr>";
-            }
-            ?>
+            <?php if (!empty($customers)): ?>
+                <?php foreach ($customers as $customer): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($customer['id']); ?></td>
+                        <td><?= htmlspecialchars($customer['firstname']); ?></td>
+                        <td><?= htmlspecialchars($customer['lastname']); ?></td>
+                        <td><?= htmlspecialchars($customer['email']); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="4" class="text-center">No se encontraron clientes</td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </div>

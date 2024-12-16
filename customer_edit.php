@@ -4,13 +4,12 @@ include 'config.php';
 $id = $_GET['id'];
 $response = makeApiRequest("customers/$id", 'GET');
 
-// Verificar si el cliente existe
 if (!isset($response['customer'])) {
     die("Error: Cliente no encontrado.");
 }
 
 $customer = $response['customer'];
-$id_default_group = $customer['id_default_group'] ?? 3; // Valor predeterminado si no existe
+$id_default_group = $customer['id_default_group'] ?? 3;
 $active = $customer['active'] ?? 1;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -21,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($firstname) || empty($lastname) || empty($email)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        // Crear XML para la actualización
         $xml = new SimpleXMLElement('<prestashop/>');
         $customerXml = $xml->addChild('customer');
         $customerXml->addChild('id', $id);
@@ -30,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $customerXml->addChild('email', htmlspecialchars($email));
         $customerXml->addChild('id_default_group', $id_default_group);
         $customerXml->addChild('active', $active);
+        $customerXml->addChild('id_lang', '1'); // Idioma predeterminado
 
-        // Enviar XML a la API
         $xml_data = $xml->asXML();
         $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
 
@@ -44,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "</pre>";
         exit;
 
-        // Validación de respuesta
         if (!empty($response['customer']['id'])) {
             header('Location: customers.php');
             exit;
@@ -54,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

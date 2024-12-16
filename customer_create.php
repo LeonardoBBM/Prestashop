@@ -22,15 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $xml_data = $xml->asXML();
         $response = makeApiRequest('customers', 'POST', $xml_data);
 
-        // Depuración
-        echo "<pre>";
-        echo "XML Enviado:\n";
-        echo htmlspecialchars($xml_data);
-        echo "\n\nRespuesta de la API:\n";
-        print_r($response);
-        echo "</pre>";
-        exit;
-
         if (isset($response['customer']['id'])) {
             header('Location: customers.php');
             exit;

@@ -5,16 +5,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $xml = new SimpleXMLElement('<prestashop/>');
     $customer = $xml->addChild('customer');
     $customer->addChild('active', 1);
-    $customer->addChild('firstname', $_POST['firstname']);
-    $customer->addChild('lastname', $_POST['lastname']);
-    $customer->addChild('email', $_POST['email']);
-    $customer->addChild('passwd', md5($_POST['password']));
+    $customer->addChild('firstname', htmlspecialchars($_POST['firstname']));
+    $customer->addChild('lastname', htmlspecialchars($_POST['lastname']));
+    $customer->addChild('email', htmlspecialchars($_POST['email']));
+    $customer->addChild('passwd', $_POST['password']); // Contraseña en texto plano
     $customer->addChild('id_default_group', 3);
 
+    // Convertir XML a string
     $xml_data = $xml->asXML();
+
+    // Enviar datos a la API
     $response = makeApiRequest('customers', 'POST', $xml_data);
 
-    if (isset($response->customer->id)) {
+    // Verificar si la API devolvió un ID válido
+    if (isset($response['customer']['id'])) {
         header('Location: customers.php');
         exit;
     } else {

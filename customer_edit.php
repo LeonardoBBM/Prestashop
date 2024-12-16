@@ -41,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $error = "No se pudo actualizar el cliente. Verifica los datos.";
         }
+        
     }
 }
 ?>

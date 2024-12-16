@@ -5,7 +5,7 @@ include 'config.php';
 function getCustomers($searchQuery = null) {
     if ($searchQuery) {
         // Realiza la búsqueda por correo electrónico o ID
-        $endpoint = "customers?filter[email]=$searchQuery|filter[id]=$searchQuery";
+        $endpoint = "customers?filter[email]=" . urlencode($searchQuery) . "&filter[id]=" . urlencode($searchQuery);
     } else {
         // Obtiene la lista completa de clientes
         $endpoint = "customers";
@@ -18,7 +18,14 @@ function getCustomers($searchQuery = null) {
 // Verifica si se realizó una búsqueda
 $searchQuery = $_POST['search_query'] ?? null;
 $response = getCustomers($searchQuery);
-$customers = isset($response['customers']) ? $response['customers'] : [];
+
+// Procesa la respuesta
+if (isset($response['error'])) {
+    $customers = [];
+    $error = $response['error'] . " (Código HTTP: " . $response['http_code'] . ")";
+} else {
+    $customers = isset($response['customers']) ? $response['customers'] : [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -41,6 +48,13 @@ $customers = isset($response['customers']) ? $response['customers'] : [];
             </div>
             <button type="submit" class="btn btn-secondary ml-2">Consultar</button>
         </form>
+
+        <!-- Mensaje de error -->
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger">
+                <?= htmlspecialchars($error); ?>
+            </div>
+        <?php endif; ?>
 
         <!-- Tabla de clientes -->
         <table class="table table-bordered">
@@ -82,4 +96,3 @@ $customers = isset($response['customers']) ? $response['customers'] : [];
     </div>
 </body>
 </html>
-

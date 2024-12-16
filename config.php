@@ -22,8 +22,17 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
+    // Registro para depuración
+    error_log("HTTP Code: " . $httpCode);
+    error_log("Response: " . $response);
+
     if ($httpCode >= 200 && $httpCode < 300) {
-        return simplexml_load_string($response); // Decodificar XML
+        $xml = simplexml_load_string($response);
+        if ($xml === false) {
+            error_log("Error al cargar XML: " . implode(', ', libxml_get_errors()));
+            return null;
+        }
+        return json_decode(json_encode($xml), true); // Convertir XML a Array
     } else {
         return [
             "error" => "Error en la solicitud",

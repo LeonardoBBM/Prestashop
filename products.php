@@ -20,58 +20,52 @@ if (isset($productsList->products->product)) {
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Clientes</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Iconos Bootstrap (Opcional) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Lista de Productos</title>
 </head>
-
 <body>
-    <div id="wrapper">
-        <?php include 'partials/sidebar.php'; ?>
-        
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content">
-                <?php include 'partials/topbar.php'; ?>
+    <h1>Lista de Productos</h1>
+    <a href="product_create.php">Crear Producto</a>
+    <br><br>
 
-                <div class="container-fluid">
-                    <h1 class="h3 mb-4 text-gray-800">Productos</h1>
-                    <button onclick="location.href='product_create.php'" class="btn btn-success mb-3">Crear Producto</button>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Precio</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // Mostrar los detalles de cada producto
-                            foreach ($products as $product): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($product->id) ?></td>
-                                    <td><?= htmlspecialchars($product->name->language) ?></td>
-                                    <td><?= htmlspecialchars($product->price) ?></td>
-                                    <td>
-                                        <a href="product_view.php?id=<?= htmlspecialchars($product->id) ?>" class="btn btn-primary btn-sm">Ver</a>
-                                        <a href="product_edit.php?id=<?= htmlspecialchars($product->id) ?>" class="btn btn-warning btn-sm">Editar</a>
-                                        <a href="product_delete.php?id=<?= htmlspecialchars($product->id) ?>" class="btn btn-danger btn-sm">Eliminar</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($products)): ?>
+                <?php foreach ($products as $product): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($product->id) ?></td>
+                        <td>
+                            <?= isset($product->name->language) 
+                                ? htmlspecialchars($product->name->language) 
+                                : 'Sin Nombre'; ?>
+                        </td>
+                        <td><?= htmlspecialchars($product->price) ?></td>
+                        <td>
+                            <a href="product_view.php?id=<?= htmlspecialchars($product->id) ?>">Ver</a> |
+                            <a href="product_edit.php?id=<?= htmlspecialchars($product->id) ?>">Editar</a> |
+                            <a href="product_delete.php?id=<?= htmlspecialchars($product->id) ?>">Eliminar</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="4">No se encontraron productos.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
 </body>
 </html>

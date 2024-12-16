@@ -55,12 +55,6 @@ if (isset($response['customers']['customer'])) {
             <a href="customer_create.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Crear Nuevo Cliente</a>
         </div>
 
-        <!-- Formulario de búsqueda -->
-        <form method="post" class="d-flex mb-4">
-            <input type="text" class="form-control me-2" name="search_query" placeholder="Buscar por ID o correo" required>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-        </form>
-
         <!-- Tabla de clientes -->
         <table class="table table-striped table-hover">
             <thead class="table-dark">

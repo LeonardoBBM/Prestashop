@@ -40,12 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit;
 
     // Validar la respuesta
-    if (!empty($response['customer']['id'])) {
+    if (!empty($response['customer']) && isset($response['customer']['id'])) {
         header('Location: customers.php');
         exit;
     } else {
-        $error = "No se pudo actualizar el cliente. Verifica los datos.";
+        $error = "El cliente fue actualizado, pero la validación no lo detectó. Verifica los datos.";
     }
+    
 }
 ?>
 

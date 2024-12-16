@@ -4,7 +4,7 @@ include 'config.php';
 $id = $_GET['id'];
 $response = makeApiRequest("customers/$id", 'GET');
 
-// Verificar que la respuesta sea válida
+// Verificar si el cliente existe
 if (!isset($response['customer'])) {
     die("Error: Cliente no encontrado.");
 }
@@ -12,25 +12,42 @@ if (!isset($response['customer'])) {
 $customer = $response['customer'];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $xml = new SimpleXMLElement('<prestashop/>');
-    $customerXml = $xml->addChild('customer');
-    $customerXml->addChild('id', $id);
-    $customerXml->addChild('firstname', htmlspecialchars($_POST['firstname']));
-    $customerXml->addChild('lastname', htmlspecialchars($_POST['lastname']));
-    $customerXml->addChild('email', htmlspecialchars($_POST['email']));
+    $firstname = trim($_POST['firstname']);
+    $lastname = trim($_POST['lastname']);
+    $email = trim($_POST['email']);
 
-    // Convertir XML a string
-    $xml_data = $xml->asXML();
-
-    // Enviar datos actualizados a la API
-    $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
-
-    // Verificar la respuesta de la API
-    if (isset($response['customer']['id'])) {
-        header('Location: customers.php');
-        exit;
+    // Validar campos
+    if (empty($firstname) || empty($lastname) || empty($email)) {
+        $error = "Todos los campos son obligatorios.";
     } else {
-        $error = "No se pudo actualizar el cliente.";
+        // Crear XML para la actualización
+        $xml = new SimpleXMLElement('<prestashop/>');
+        $customerXml = $xml->addChild('customer');
+        $customerXml->addChild('id', $id);
+        $customerXml->addChild('firstname', htmlspecialchars($firstname));
+        $customerXml->addChild('lastname', htmlspecialchars($lastname));
+        $customerXml->addChild('email', htmlspecialchars($email));
+
+        // Enviar XML a la API
+        $xml_data = $xml->asXML();
+        $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
+
+        // Depuración
+        echo "<pre>";
+        echo "XML Enviado:\n";
+        echo htmlspecialchars($xml_data);
+        echo "\n\nRespuesta de la API:\n";
+        print_r($response);
+        echo "</pre>";
+        exit;
+
+        // Validar respuesta
+        if (isset($response['customer']['id'])) {
+            header('Location: customers.php');
+            exit;
+        } else {
+            $error = "No se pudo actualizar el cliente. Verifica los datos.";
+        }
     }
 }
 ?>

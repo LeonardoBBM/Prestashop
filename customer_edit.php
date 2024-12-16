@@ -10,7 +10,6 @@ if (!isset($response['customer'])) {
 }
 
 $customer = $response['customer'];
-$current_password = $customer['passwd'] ?? ''; // Guardar el hash de la contraseña actual
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $firstname = trim($_POST['firstname']);
@@ -20,19 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($firstname) || empty($lastname) || empty($email)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        // Crear XML para la actualización
+        // Crear XML para la actualización (sin el campo 'passwd')
         $xml = new SimpleXMLElement('<prestashop/>');
         $customerXml = $xml->addChild('customer');
         $customerXml->addChild('id', $id);
         $customerXml->addChild('firstname', htmlspecialchars($firstname));
         $customerXml->addChild('lastname', htmlspecialchars($lastname));
         $customerXml->addChild('email', htmlspecialchars($email));
-        $customerXml->addChild('passwd', $current_password); // Enviar hash actual de la contraseña
 
+        // Enviar XML a la API
         $xml_data = $xml->asXML();
         $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
 
-        // Depuración: Imprimir XML y respuesta
+        // Depuración
         echo "<pre>";
         echo "XML Enviado:\n";
         echo htmlspecialchars($xml_data);

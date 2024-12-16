@@ -16,11 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $lastname = trim($_POST['lastname']);
     $email = trim($_POST['email']);
 
-    // Validar campos
     if (empty($firstname) || empty($lastname) || empty($email)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        // Crear XML para la actualización
         $xml = new SimpleXMLElement('<prestashop/>');
         $customerXml = $xml->addChild('customer');
         $customerXml->addChild('id', $id);
@@ -28,22 +26,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $customerXml->addChild('lastname', htmlspecialchars($lastname));
         $customerXml->addChild('email', htmlspecialchars($email));
 
-        // Enviar XML a la API
         $xml_data = $xml->asXML();
         $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
 
-        
+        // Depuración
+        echo "<pre>";
+        echo "XML Enviado:\n";
+        echo htmlspecialchars($xml_data);
+        echo "\n\nRespuesta de la API:\n";
+        print_r($response);
+        echo "</pre>";
+        exit;
 
-        // Validar respuesta
-        if (isset($response['customer']['id'])) {
+        // Validación ajustada
+        if (!empty($response['customer']['id'])) {
             header('Location: customers.php');
             exit;
         } else {
             $error = "No se pudo actualizar el cliente. Verifica los datos.";
         }
-        
     }
 }
+
 ?>
 
 <!DOCTYPE html>

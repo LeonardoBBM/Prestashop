@@ -1,24 +1,30 @@
 <?php
 include 'config.php';
 
-// Obtener lista de productos (solo IDs)
-$productsList = makeApiRequest('products', 'GET');
+// Función para obtener la lista de productos o realizar una búsqueda específica
+function getProducts() {
+    $productsList = makeApiRequest('products', 'GET');
+    $products = [];
 
-$products = [];
-if (isset($productsList->products->product)) {
-    foreach ($productsList->products->product as $product) {
-        $productId = (string)$product['id'];
-        // Obtener detalles del producto individualmente
-        $productDetails = makeApiRequest("products/$productId", 'GET');
-        
-        if (isset($productDetails->product)) {
-            $products[] = $productDetails->product;
+    // Verificar si la lista de productos contiene elementos
+    if (isset($productsList['products']['product'])) {
+        $productRefs = $productsList['products']['product'];
+        foreach ($productRefs as $productRef) {
+            $productId = $productRef['@attributes']['id'] ?? null;
+            if ($productId) {
+                // Obtener detalles individuales del producto
+                $productDetails = makeApiRequest("products/$productId", 'GET');
+                if (isset($productDetails['product'])) {
+                    $products[] = $productDetails['product'];
+                }
+            }
         }
     }
-} else {
-    echo "No se encontraron productos.";
-    exit;
+    return $products;
 }
+
+// Obtener los productos
+$products = getProducts();
 ?>
 
 <!DOCTYPE html>
@@ -30,9 +36,14 @@ if (isset($productsList->products->product)) {
 </head>
 <body>
     <h1>Lista de Productos</h1>
-    <a href="product_create.php">Crear Producto</a>
+
+    <!-- Botón para agregar un nuevo producto -->
+    <a href="product_create.php">
+        <button>Agregar Nuevo Producto</button>
+    </a>
     <br><br>
 
+    <!-- Tabla de productos -->
     <table border="1" cellpadding="5" cellspacing="0">
         <thead>
             <tr>
@@ -46,17 +57,13 @@ if (isset($productsList->products->product)) {
             <?php if (!empty($products)): ?>
                 <?php foreach ($products as $product): ?>
                     <tr>
-                        <td><?= htmlspecialchars($product->id) ?></td>
+                        <td><?= htmlspecialchars($product['id'] ?? 'N/A'); ?></td>
+                        <td><?= htmlspecialchars($product['name']['language'] ?? 'Sin Nombre'); ?></td>
+                        <td><?= htmlspecialchars($product['price'] ?? 'N/A'); ?></td>
                         <td>
-                            <?= isset($product->name->language) 
-                                ? htmlspecialchars($product->name->language) 
-                                : 'Sin Nombre'; ?>
-                        </td>
-                        <td><?= htmlspecialchars($product->price) ?></td>
-                        <td>
-                            <a href="product_view.php?id=<?= htmlspecialchars($product->id) ?>">Ver</a> |
-                            <a href="product_edit.php?id=<?= htmlspecialchars($product->id) ?>">Editar</a> |
-                            <a href="product_delete.php?id=<?= htmlspecialchars($product->id) ?>">Eliminar</a>
+                            <a href="product_view.php?id=<?= htmlspecialchars($product['id']); ?>">Ver</a> |
+                            <a href="product_edit.php?id=<?= htmlspecialchars($product['id']); ?>">Editar</a> |
+                            <a href="product_delete.php?id=<?= htmlspecialchars($product['id']); ?>">Eliminar</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

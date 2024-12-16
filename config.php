@@ -1,6 +1,6 @@
 <?php
 // Definir la URL completa de la API de Prestashop
-define('API_URL', 'http://localhost/prestashop/api/');
+define('API_URL', 'http://localhost:8080/prestashop/api/');
 define('API_KEY', 'MGEU9V95CGNSWTBNMEUC4Q5U1DKFLFYT');
 
 // Función para realizar solicitudes a la API de Prestashop

@@ -66,7 +66,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <form method="post">
         <div>
             <label for="name">Nombre del Producto:</label>
-            <input type="text" name="name" value="<?= htmlspecialchars($product['name']['language'] ?? '') ?>" required>
+            <?php
+            $name = 'Sin Nombre';
+            if (isset($product['name']['language'])) {
+                $nameData = $product['name']['language'];
+                $name = is_array($nameData) ? htmlspecialchars($nameData[0]) : htmlspecialchars($nameData);
+            }
+            ?>
+            <input type="text" name="name" value="<?= $name ?>" required>
         </div>
         <br>
         <div>

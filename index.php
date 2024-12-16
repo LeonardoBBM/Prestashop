@@ -45,7 +45,7 @@
 
         <!-- Prueba de Restricción -->
         <div class="mt-4">
-            <a href="restricted_test.php" class="btn btn-danger">Probar Restricción de Endpoint</a>
+            <a href="restricted.php" class="btn btn-danger">Probar Restricción de Endpoint</a>
         </div>
     </div>
 

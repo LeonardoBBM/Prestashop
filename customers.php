@@ -4,34 +4,38 @@ include 'config.php';
 // Función para obtener la lista de clientes o realizar una búsqueda específica
 function getCustomers($searchQuery = null) {
     if ($searchQuery) {
-        // Intentar con filtro (correo electrónico o ID)
+        // Filtrar clientes por correo o ID
         $endpoint = "customers?filter[email]=" . urlencode($searchQuery) . "&filter[id]=" . urlencode($searchQuery);
     } else {
-        // Obtener todos los clientes
+        // Obtener la lista completa de clientes
         $endpoint = "customers";
     }
-
-    // Llamar a la API
     return makeApiRequest($endpoint, 'GET');
 }
 
-// Obtener datos
+// Función para obtener los detalles completos de un cliente
+function getCustomerDetails($customerId) {
+    $endpoint = "customers/$customerId";
+    return makeApiRequest($endpoint, 'GET');
+}
+
+// Obtener la lista de clientes
 $searchQuery = $_POST['search_query'] ?? null;
 $response = getCustomers($searchQuery);
 
-// Depuración: Mostrar la respuesta de la API
-echo "<pre>";
-print_r($response);
-echo "</pre>";
-
-// Procesar los clientes
-if (isset($response['error'])) {
-    $customers = [];
-    $error = $response['error'] . " (Código HTTP: " . $response['http_code'] . ")";
-} elseif (isset($response['customers']['customer'])) {
-    $customers = $response['customers']['customer']; // Ajustado para el formato correcto
-} else {
-    $customers = [];
+// Procesar la lista de IDs de clientes
+$customers = [];
+if (isset($response['customers']['customer'])) {
+    $customerRefs = $response['customers']['customer'];
+    foreach ($customerRefs as $ref) {
+        $customerId = $ref['@attributes']['id'] ?? null;
+        if ($customerId) {
+            $details = getCustomerDetails($customerId);
+            if (isset($details['customer'])) {
+                $customers[] = $details['customer'];
+            }
+        }
+    }
 }
 ?>
 
@@ -55,13 +59,6 @@ if (isset($response['error'])) {
             </div>
             <button type="submit" class="btn btn-secondary ml-2">Consultar</button>
         </form>
-
-        <!-- Mensaje de error -->
-        <?php if (isset($error)): ?>
-            <div class="alert alert-danger">
-                <?= htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
 
         <!-- Tabla de clientes -->
         <table class="table table-bordered">
@@ -87,9 +84,9 @@ if (isset($response['error'])) {
                             <td><?= htmlspecialchars($customer['date_add'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars(($customer['id_gender'] ?? 0) == 1 ? 'Hombre' : (($customer['id_gender'] ?? 0) == 2 ? 'Mujer' : 'Otro')); ?></td>
                             <td>
-                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-info btn-sm">Ver</a>
-                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-warning btn-sm">Editar</a>
-                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-danger btn-sm">Eliminar</a>
+                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm">Ver</a>
+                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm">Eliminar</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

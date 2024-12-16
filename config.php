@@ -15,24 +15,21 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
     ));
 
     if ($method == 'POST' || $method == 'PUT') {
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data); // Envía los datos como XML
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    // Depuración: Verificar la respuesta cruda
-    error_log("HTTP Code: " . $httpCode);
-    error_log("Response: " . $response);
-
     if ($httpCode >= 200 && $httpCode < 300) {
-        // Convertir XML a un arreglo
-        $xml = simplexml_load_string($response);
+        $xml = simplexml_load_string($response, "SimpleXMLElement", LIBXML_NOCDATA);
         if ($xml === false) {
             error_log("Error al cargar XML: " . implode(', ', libxml_get_errors()));
             return [];
         }
+
+        // Convertir XML a Array
         return json_decode(json_encode($xml), true);
     } else {
         return [
@@ -42,4 +39,5 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
         ];
     }
 }
+
 ?>

@@ -17,25 +17,17 @@ function getCustomerDetails($customerId) {
     return makeApiRequest($endpoint, 'GET');
 }
 
-// Obtener lista de clientes
+// Obtener la lista de clientes
 $searchQuery = $_POST['search_query'] ?? null;
 $response = getCustomers($searchQuery);
 
-// Inicializar la lista de clientes
 $customers = [];
 if (isset($response['customers']['customer'])) {
     $customerRefs = $response['customers']['customer'];
     foreach ($customerRefs as $ref) {
         $customerId = $ref['@attributes']['id'] ?? null;
         if ($customerId) {
-            // Obtener detalles del cliente
             $details = getCustomerDetails($customerId);
-            
-            // Depuración: Imprimir la respuesta de cada cliente
-            echo "<pre>Detalles del cliente $customerId:";
-            print_r($details);
-            echo "</pre>";
-
             if (isset($details['customer'])) {
                 $customers[] = $details['customer'];
             }
@@ -86,9 +78,9 @@ if (isset($response['customers']['customer'])) {
                             <td><?= htmlspecialchars($customer['date_add'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars(($customer['id_gender'] ?? 0) == 1 ? 'Hombre' : (($customer['id_gender'] ?? 0) == 2 ? 'Mujer' : 'Otro')); ?></td>
                             <td>
-                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-info btn-sm">Ver</a>
-                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-warning btn-sm">Editar</a>
-                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-danger btn-sm">Eliminar</a>
+                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm">Ver</a>
+                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm">Eliminar</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

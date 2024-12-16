@@ -2,7 +2,7 @@
 include 'config.php';
 
 // Endpoint no autorizado
-$restrictedEndpoint = 'categories'; // Cambia 'categories' por otro endpoint restringido si es necesario
+$restrictedEndpoint = 'carts';
 
 // Intentar acceder al endpoint restringido
 $response = makeApiRequest($restrictedEndpoint, 'GET');

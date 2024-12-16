@@ -1,6 +1,11 @@
 <?php
 include 'config.php';
 
+echo "<pre>";
+$response = callAPI('customers');
+var_dump($response); // Imprime para verificar si se recibe el XML correctamente
+echo "</pre>";
+
 // Crear un nuevo cliente si se envía el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $xml = <<<EOD

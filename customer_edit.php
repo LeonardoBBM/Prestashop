@@ -9,49 +9,45 @@ if (!isset($response['customer'])) {
 }
 
 $customer = $response['customer'];
-$id_default_group = $customer['id_default_group'] ?? 3;
-$active = $customer['active'] ?? 1;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $firstname = trim($_POST['firstname']);
-    $lastname = trim($_POST['lastname']);
-    $email = trim($_POST['email']);
+    // Actualizar solo los campos editables, pero incluir todos los existentes
+    $customer['firstname'] = trim($_POST['firstname']);
+    $customer['lastname'] = trim($_POST['lastname']);
+    $customer['email'] = trim($_POST['email']);
 
-    if (empty($firstname) || empty($lastname) || empty($email)) {
-        $error = "Todos los campos son obligatorios.";
-    } else {
-        $xml = new SimpleXMLElement('<prestashop/>');
-        $customerXml = $xml->addChild('customer');
-        $customerXml->addChild('id', $id);
-        $customerXml->addChild('firstname', htmlspecialchars($firstname));
-        $customerXml->addChild('lastname', htmlspecialchars($lastname));
-        $customerXml->addChild('email', htmlspecialchars($email));
-        $customerXml->addChild('id_default_group', $id_default_group);
-        $customerXml->addChild('active', $active);
-        $customerXml->addChild('id_lang', '1'); // Idioma predeterminado
+    // Crear XML con todos los campos
+    $xml = new SimpleXMLElement('<prestashop/>');
+    $customerXml = $xml->addChild('customer');
 
-        $xml_data = $xml->asXML();
-        $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
-
-        // Depuración
-        echo "<pre>";
-        echo "XML Enviado:\n";
-        echo htmlspecialchars($xml_data);
-        echo "\n\nRespuesta de la API:\n";
-        print_r($response);
-        echo "</pre>";
-        exit;
-
-        if (!empty($response['customer']['id'])) {
-            header('Location: customers.php');
-            exit;
-        } else {
-            $error = "No se pudo actualizar el cliente. Verifica los datos.";
+    foreach ($customer as $key => $value) {
+        if (!is_array($value) && !empty($value)) { // Ignorar arrays vacíos o nulos
+            $customerXml->addChild($key, htmlspecialchars($value));
         }
+    }
+
+    // Enviar solicitud PUT
+    $xml_data = $xml->asXML();
+    $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
+
+    // Depuración
+    echo "<pre>";
+    echo "XML Enviado:\n";
+    echo htmlspecialchars($xml_data);
+    echo "\n\nRespuesta de la API:\n";
+    print_r($response);
+    echo "</pre>";
+    exit;
+
+    // Validar la respuesta
+    if (!empty($response['customer']['id'])) {
+        header('Location: customers.php');
+        exit;
+    } else {
+        $error = "No se pudo actualizar el cliente. Verifica los datos.";
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="es">

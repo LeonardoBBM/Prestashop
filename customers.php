@@ -39,17 +39,31 @@ if (isset($response['customers']['customer'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Lista de Clientes</title>
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos Bootstrap (Opcional) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container mt-4">
-        <h2>Lista de Clientes</h2>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Lista de Clientes</h2>
+            <a href="customer_create.php" class="btn btn-success"><i class="bi bi-plus-circle"></i> Crear Nuevo Cliente</a>
+        </div>
 
-        <a href="customer_create.php" class="btn btn-primary mb-3">Crear Nuevo Cliente</a>
+        <!-- Formulario de búsqueda -->
+        <form method="post" class="d-flex mb-4">
+            <input type="text" class="form-control me-2" name="search_query" placeholder="Buscar por ID o correo" required>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+        </form>
 
-        <table class="table table-bordered">
-            <thead>
+        <!-- Tabla de clientes -->
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
                 <tr>
                     <th>ID</th>
                     <th>Nombre Completo</th>
@@ -69,19 +83,20 @@ if (isset($response['customers']['customer'])) {
                             <td><?= htmlspecialchars($customer['date_add'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars(($customer['id_gender'] ?? 0) == 1 ? 'Hombre' : (($customer['id_gender'] ?? 0) == 2 ? 'Mujer' : 'Otro')); ?></td>
                             <td>
-                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm">Ver</a>
-                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm">Editar</a>
-                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm">Eliminar</a>
+                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm"><i class="bi bi-eye"></i> Ver</a>
+                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Eliminar</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="7" class="text-center">No se encontraron clientes.</td>
+                        <td colspan="6" class="text-center">No se encontraron clientes.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </body>
+
 </html>

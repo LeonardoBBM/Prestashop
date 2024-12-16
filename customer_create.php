@@ -35,35 +35,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <title>Crear Cliente</title>
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos Bootstrap (Opcional) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+
 <body>
-    <div class="container mt-4">
-        <h2>Crear Cliente</h2>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Crear Cliente</h2>
+            <a href="customers.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Regresar</a>
+        </div>
+
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?= $error ?></div>
         <?php endif; ?>
-        <form method="post">
-            <div class="form-group">
-                <label for="firstname">Nombre:</label>
+
+        <form method="post" class="p-4 border rounded shadow-sm bg-light">
+            <div class="mb-3">
+                <label for="firstname" class="form-label">Nombre</label>
                 <input type="text" class="form-control" name="firstname" required>
             </div>
-            <div class="form-group">
-                <label for="lastname">Apellido:</label>
+            <div class="mb-3">
+                <label for="lastname" class="form-label">Apellido</label>
                 <input type="text" class="form-control" name="lastname" required>
             </div>
-            <div class="form-group">
-                <label for="email">Correo Electrónico:</label>
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
                 <input type="email" class="form-control" name="email" required>
             </div>
-            <div class="form-group">
-                <label for="password">Contraseña:</label>
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
                 <input type="password" class="form-control" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Crear Cliente</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Crear Cliente</button>
         </form>
-        <a href="customers.php" class="btn btn-secondary mt-2">Regresar a Clientes</a>
     </div>
 </body>
+
 </html>

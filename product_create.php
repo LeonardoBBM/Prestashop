@@ -6,33 +6,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $price = trim($_POST['price']);
     $quantity = trim($_POST['quantity']);
 
-    // Validar que los campos no estén vacíos
     if (empty($name) || empty($price) || empty($quantity)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        // Crear el XML para la API de Prestashop
+        // Crear XML para el producto
         $xml = new SimpleXMLElement('<prestashop/>');
         $product = $xml->addChild('product');
 
-        // Añadir los campos requeridos
         $product->addChild('active', 1); // Producto activo
         $product->addChild('price', htmlspecialchars($price));
-        
-        // Nombre del producto con lenguaje predeterminado
+
+        // Nombre del producto (lenguaje predeterminado: id=1)
         $nameElement = $product->addChild('name');
         $nameElement->addChild('language', htmlspecialchars($name))
-                    ->addAttribute('id', '1'); // ID del idioma predeterminado (1 es español por defecto)
+                    ->addAttribute('id', '1');
 
-        // Cantidad del producto (Stock)
-        $stockAvailable = $xml->addChild('stock_available');
-        $stockAvailable->addChild('quantity', htmlspecialchars($quantity));
+        // Categoría predeterminada (obligatorio)
+        $product->addChild('id_category_default', '3'); // ID de una categoría existente
+        $product->addChild('id_tax_rules_group', '1'); // Grupo de impuestos predeterminado (opcional)
 
-        // Convertir a XML
+        // Guardar el XML y enviar a la API
         $xml_data = $xml->asXML();
         $response = makeApiRequest('products', 'POST', $xml_data);
 
-        // Verificar respuesta
         if (isset($response['product']['id'])) {
+            $productId = $response['product']['id'];
+
+            // Actualizar stock usando stock_availables
+            $stockXml = new SimpleXMLElement('<prestashop/>');
+            $stock = $stockXml->addChild('stock_available');
+            $stock->addChild('id_product', $productId);
+            $stock->addChild('quantity', htmlspecialchars($quantity));
+
+            makeApiRequest('stock_availables', 'POST', $stockXml->asXML());
+
             header('Location: products.php');
             exit;
         } else {
@@ -55,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div style="color: red;"><?= $error ?></div>
     <?php endif; ?>
 
-    <!-- Formulario para crear un nuevo producto -->
+    <!-- Formulario de creación de producto -->
     <form method="post">
         <div>
             <label for="name">Nombre del Producto:</label>

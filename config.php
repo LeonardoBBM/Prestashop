@@ -12,7 +12,6 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
     curl_setopt($ch, CURLOPT_USERPWD, API_KEY . ':');
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
         'Content-Type: application/xml',
-        'Accept: application/xml' // Importante para la respuesta
     ));
 
     if ($method == 'POST' || $method == 'PUT') {
@@ -24,7 +23,14 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
     curl_close($ch);
 
     if ($httpCode >= 200 && $httpCode < 300) {
-        return simplexml_load_string($response);
+        $xml = simplexml_load_string($response, "SimpleXMLElement", LIBXML_NOCDATA);
+        if ($xml === false) {
+            error_log("Error al cargar XML: " . implode(', ', libxml_get_errors()));
+            return [];
+        }
+
+        // Convertir XML a Array
+        return json_decode(json_encode($xml), true);
     } else {
         return [
             "error" => "Error en la solicitud",
@@ -33,6 +39,5 @@ function makeApiRequest($endpoint, $method = 'GET', $data = null) {
         ];
     }
 }
-
 
 ?>

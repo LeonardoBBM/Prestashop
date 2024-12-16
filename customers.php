@@ -61,7 +61,6 @@ if (isset($response['customers']['customer'])) {
                     <th>ID</th>
                     <th>Nombre Completo</th>
                     <th>Correo Electrónico</th>
-                    <th>Teléfono</th>
                     <th>Fecha de Registro</th>
                     <th>Género</th>
                     <th>Acciones</th>
@@ -74,7 +73,6 @@ if (isset($response['customers']['customer'])) {
                             <td><?= htmlspecialchars($customer['id'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars($customer['firstname'] ?? '') . ' ' . htmlspecialchars($customer['lastname'] ?? ''); ?></td>
                             <td><?= htmlspecialchars($customer['email'] ?? 'N/A'); ?></td>
-                            <td><?= htmlspecialchars($customer['phone'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars($customer['date_add'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars(($customer['id_gender'] ?? 0) == 1 ? 'Hombre' : (($customer['id_gender'] ?? 0) == 2 ? 'Mujer' : 'Otro')); ?></td>
                             <td>

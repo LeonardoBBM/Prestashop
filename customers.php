@@ -48,13 +48,6 @@ if (isset($response['customers']['customer'])) {
 
         <a href="customer_create.php" class="btn btn-primary mb-3">Crear Nuevo Cliente</a>
 
-        <form method="post" class="form-inline mb-3">
-            <div class="form-group">
-                <input type="text" class="form-control" name="search_query" placeholder="Buscar por ID o correo" required>
-            </div>
-            <button type="submit" class="btn btn-secondary ml-2">Consultar</button>
-        </form>
-
         <table class="table table-bordered">
             <thead>
                 <tr>

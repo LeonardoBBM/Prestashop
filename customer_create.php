@@ -2,27 +2,41 @@
 include 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $xml = new SimpleXMLElement('<prestashop/>');
-    $customer = $xml->addChild('customer');
-    $customer->addChild('active', 1);
-    $customer->addChild('firstname', htmlspecialchars($_POST['firstname']));
-    $customer->addChild('lastname', htmlspecialchars($_POST['lastname']));
-    $customer->addChild('email', htmlspecialchars($_POST['email']));
-    $customer->addChild('passwd', $_POST['password']); // Contraseña en texto plano
-    $customer->addChild('id_default_group', 3);
+    $firstname = trim($_POST['firstname']);
+    $lastname = trim($_POST['lastname']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
 
-    // Convertir XML a string
-    $xml_data = $xml->asXML();
-
-    // Enviar datos a la API
-    $response = makeApiRequest('customers', 'POST', $xml_data);
-
-    // Verificar si la API devolvió un ID válido
-    if (isset($response['customer']['id'])) {
-        header('Location: customers.php');
-        exit;
+    if (empty($firstname) || empty($lastname) || empty($email) || empty($password)) {
+        $error = "Todos los campos son obligatorios.";
     } else {
-        $error = "No se pudo crear el cliente. Verifica los datos ingresados.";
+        $xml = new SimpleXMLElement('<prestashop/>');
+        $customer = $xml->addChild('customer');
+        $customer->addChild('active', 1);
+        $customer->addChild('firstname', htmlspecialchars($firstname));
+        $customer->addChild('lastname', htmlspecialchars($lastname));
+        $customer->addChild('email', htmlspecialchars($email));
+        $customer->addChild('passwd', $password);
+        $customer->addChild('id_default_group', 3);
+
+        $xml_data = $xml->asXML();
+        $response = makeApiRequest('customers', 'POST', $xml_data);
+
+        // Depuración
+        echo "<pre>";
+        echo "XML Enviado:\n";
+        echo htmlspecialchars($xml_data);
+        echo "\n\nRespuesta de la API:\n";
+        print_r($response);
+        echo "</pre>";
+        exit;
+
+        if (isset($response['customer']['id'])) {
+            header('Location: customers.php');
+            exit;
+        } else {
+            $error = "No se pudo crear el cliente. Verifica los datos ingresados.";
+        }
     }
 }
 ?>

@@ -3,15 +3,20 @@ include 'config.php';
 
 // Llamar a la API para obtener la lista de clientes
 $response = callAPI('customers');
-$customers = [];
+
+// Mostrar la respuesta cruda para depuración
+echo "<pre>Respuesta cruda de la API:\n";
+var_dump($response);
+echo "</pre>";
 
 // Convertir la respuesta en un objeto SimpleXML
 $responseXML = simplexml_load_string($response);
 
-// Verificar que se recibió una respuesta válida
+// Verificar si se recibió una respuesta válida
+$customers = [];
 if ($responseXML && isset($responseXML->customers->customer)) {
     foreach ($responseXML->customers->customer as $customer) {
-        // Realizar una solicitud individual para cada cliente
+        // Obtener detalles del cliente individual
         $customerDetails = callAPI("customers/{$customer['id']}");
         $customerXML = simplexml_load_string($customerDetails);
         if ($customerXML && isset($customerXML->customer)) {

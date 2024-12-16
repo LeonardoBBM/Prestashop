@@ -4,7 +4,7 @@ include 'config.php';
 // Llamada inicial a la API para obtener la lista de IDs de clientes
 $response = callAPI('customers');
 
-// Mostrar respuesta cruda para depuración (puedes eliminar esto después)
+// Mostrar la respuesta cruda para depuración
 echo "<pre>Respuesta cruda de la API:\n";
 var_dump($response);
 echo "</pre>";
@@ -12,16 +12,16 @@ echo "</pre>";
 // Convertir la respuesta inicial en objeto SimpleXML
 $responseXML = simplexml_load_string($response);
 
-$customers = [];
+$customers = []; // Inicializar arreglo vacío para almacenar los detalles
 if ($responseXML && isset($responseXML->customers->customer)) {
     foreach ($responseXML->customers->customer as $customer) {
+        $id = (string) $customer['id']; // Obtener el ID del cliente
         // Realizar una segunda llamada para obtener detalles completos de cada cliente
-        $customerDetailsXML = callAPI("customers/{$customer['id']}");
+        $customerDetailsXML = callAPI("customers/$id");
         $customerDetails = simplexml_load_string($customerDetailsXML);
 
-        // Agregar los detalles del cliente a la lista
         if ($customerDetails && isset($customerDetails->customer)) {
-            $customers[] = $customerDetails->customer;
+            $customers[] = $customerDetails->customer; // Agregar los detalles al arreglo
         }
     }
 }
@@ -47,10 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </prestashop>
 EOD;
 
-    // Llamada a la API para crear un nuevo cliente
     callAPI('customers', 'POST', $xml);
-
-    // Redireccionar para evitar reenvío del formulario
     header("Location: customers.php");
     exit;
 }

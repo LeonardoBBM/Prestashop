@@ -32,14 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $xml_data = $xml->asXML();
         $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
 
-        // Depuración
-        echo "<pre>";
-        echo "XML Enviado:\n";
-        echo htmlspecialchars($xml_data);
-        echo "\n\nRespuesta de la API:\n";
-        print_r($response);
-        echo "</pre>";
-        exit;
+        
 
         // Validar respuesta
         if (isset($response['customer']['id'])) {

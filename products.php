@@ -1,18 +1,16 @@
 <?php
 include 'config.php';
 
-// Función para obtener la lista de productos o realizar una búsqueda específica
+// Función para obtener la lista de productos
 function getProducts() {
     $productsList = makeApiRequest('products', 'GET');
     $products = [];
 
-    // Verificar si la lista de productos contiene elementos
     if (isset($productsList['products']['product'])) {
         $productRefs = $productsList['products']['product'];
         foreach ($productRefs as $productRef) {
             $productId = $productRef['@attributes']['id'] ?? null;
             if ($productId) {
-                // Obtener detalles individuales del producto
                 $productDetails = makeApiRequest("products/$productId", 'GET');
                 if (isset($productDetails['product'])) {
                     $products[] = $productDetails['product'];
@@ -36,8 +34,6 @@ $products = getProducts();
 </head>
 <body>
     <h1>Lista de Productos</h1>
-
-    <!-- Botón para agregar un nuevo producto -->
     <a href="product_create.php">
         <button>Agregar Nuevo Producto</button>
     </a>
@@ -58,7 +54,17 @@ $products = getProducts();
                 <?php foreach ($products as $product): ?>
                     <tr>
                         <td><?= htmlspecialchars($product['id'] ?? 'N/A'); ?></td>
-                        <td><?= htmlspecialchars($product['name']['language'] ?? 'Sin Nombre'); ?></td>
+                        <td>
+                            <?php
+                            // Extraer el nombre del producto
+                            $name = 'Sin Nombre';
+                            if (isset($product['name']['language'])) {
+                                $nameData = $product['name']['language'];
+                                $name = is_array($nameData) ? htmlspecialchars($nameData[0]) : htmlspecialchars($nameData);
+                            }
+                            echo $name;
+                            ?>
+                        </td>
                         <td><?= htmlspecialchars($product['price'] ?? 'N/A'); ?></td>
                         <td>
                             <a href="product_view.php?id=<?= htmlspecialchars($product['id']); ?>">Ver</a> |

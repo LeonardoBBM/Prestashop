@@ -4,33 +4,38 @@ include 'config.php';
 // Función para obtener la lista de clientes o realizar una búsqueda específica
 function getCustomers($searchQuery = null) {
     if ($searchQuery) {
-        // Filtrar clientes por correo o ID
         $endpoint = "customers?filter[email]=" . urlencode($searchQuery) . "&filter[id]=" . urlencode($searchQuery);
     } else {
-        // Obtener la lista completa de clientes
         $endpoint = "customers";
     }
     return makeApiRequest($endpoint, 'GET');
 }
 
-// Función para obtener los detalles completos de un cliente
+// Función para obtener detalles completos de un cliente
 function getCustomerDetails($customerId) {
     $endpoint = "customers/$customerId";
     return makeApiRequest($endpoint, 'GET');
 }
 
-// Obtener la lista de clientes
+// Obtener lista de clientes
 $searchQuery = $_POST['search_query'] ?? null;
 $response = getCustomers($searchQuery);
 
-// Procesar la lista de IDs de clientes
+// Inicializar la lista de clientes
 $customers = [];
 if (isset($response['customers']['customer'])) {
     $customerRefs = $response['customers']['customer'];
     foreach ($customerRefs as $ref) {
         $customerId = $ref['@attributes']['id'] ?? null;
         if ($customerId) {
+            // Obtener detalles del cliente
             $details = getCustomerDetails($customerId);
+            
+            // Depuración: Imprimir la respuesta de cada cliente
+            echo "<pre>Detalles del cliente $customerId:";
+            print_r($details);
+            echo "</pre>";
+
             if (isset($details['customer'])) {
                 $customers[] = $details['customer'];
             }
@@ -49,10 +54,8 @@ if (isset($response['customers']['customer'])) {
     <div class="container mt-4">
         <h2>Lista de Clientes</h2>
 
-        <!-- Botón para crear un nuevo cliente -->
         <a href="customer_create.php" class="btn btn-primary mb-3">Crear Nuevo Cliente</a>
 
-        <!-- Formulario de consulta de clientes -->
         <form method="post" class="form-inline mb-3">
             <div class="form-group">
                 <input type="text" class="form-control" name="search_query" placeholder="Buscar por ID o correo" required>
@@ -60,7 +63,6 @@ if (isset($response['customers']['customer'])) {
             <button type="submit" class="btn btn-secondary ml-2">Consultar</button>
         </form>
 
-        <!-- Tabla de clientes -->
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -84,9 +86,9 @@ if (isset($response['customers']['customer'])) {
                             <td><?= htmlspecialchars($customer['date_add'] ?? 'N/A'); ?></td>
                             <td><?= htmlspecialchars(($customer['id_gender'] ?? 0) == 1 ? 'Hombre' : (($customer['id_gender'] ?? 0) == 2 ? 'Mujer' : 'Otro')); ?></td>
                             <td>
-                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm">Ver</a>
-                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm">Editar</a>
-                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm">Eliminar</a>
+                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-info btn-sm">Ver</a>
+                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id'] ?? ''); ?>" class="btn btn-danger btn-sm">Eliminar</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

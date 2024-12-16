@@ -10,6 +10,7 @@ if (!isset($response['customer'])) {
 }
 
 $customer = $response['customer'];
+$current_password = $customer['passwd'] ?? ''; // Guardar el hash de la contraseña actual
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $firstname = trim($_POST['firstname']);
@@ -19,17 +20,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($firstname) || empty($lastname) || empty($email)) {
         $error = "Todos los campos son obligatorios.";
     } else {
+        // Crear XML para la actualización
         $xml = new SimpleXMLElement('<prestashop/>');
         $customerXml = $xml->addChild('customer');
         $customerXml->addChild('id', $id);
         $customerXml->addChild('firstname', htmlspecialchars($firstname));
         $customerXml->addChild('lastname', htmlspecialchars($lastname));
         $customerXml->addChild('email', htmlspecialchars($email));
+        $customerXml->addChild('passwd', $current_password); // Enviar hash actual de la contraseña
 
         $xml_data = $xml->asXML();
         $response = makeApiRequest("customers/$id", 'PUT', $xml_data);
 
-        // Depuración
+        // Depuración: Imprimir XML y respuesta
         echo "<pre>";
         echo "XML Enviado:\n";
         echo htmlspecialchars($xml_data);
@@ -38,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "</pre>";
         exit;
 
-        // Validación ajustada
+        // Validación de respuesta
         if (!empty($response['customer']['id'])) {
             header('Location: customers.php');
             exit;
@@ -47,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
-
 ?>
 
 <!DOCTYPE html>

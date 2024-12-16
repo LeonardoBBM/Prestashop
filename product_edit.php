@@ -55,35 +55,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Producto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Editar Producto</h1>
-    <?php if (isset($error)): ?>
-        <div style="color: red;"><?= $error ?></div>
-    <?php endif; ?>
-
-    <!-- Formulario para editar el producto -->
-    <form method="post">
-        <div>
-            <label for="name">Nombre del Producto:</label>
-            <?php
-            $name = 'Sin Nombre';
-            if (isset($product['name']['language'])) {
-                $nameData = $product['name']['language'];
-                $name = is_array($nameData) ? htmlspecialchars($nameData[0]) : htmlspecialchars($nameData);
-            }
-            ?>
-            <input type="text" name="name" value="<?= $name ?>" required>
-        </div>
-        <br>
-        <div>
-            <label for="price">Precio:</label>
-            <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product['price'] ?? '') ?>" required>
-        </div>
-        <br>
-        <button type="submit">Actualizar Producto</button>
-    </form>
-    <br>
-    <a href="products.php">Regresar a la lista de productos</a>
+    <div class="container mt-4">
+        <h1>Editar Producto</h1>
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
+        <form method="post">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nombre del Producto:</label>
+                <input type="text" name="name" value="<?= $name ?>" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="price" class="form-label">Precio:</label>
+                <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product['price'] ?? '') ?>" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-warning">Actualizar Producto</button>
+        </form>
+        <a href="products.php" class="btn btn-secondary mt-3">Regresar a la lista de productos</a>
+    </div>
 </body>
 </html>

@@ -10,6 +10,8 @@ if (!isset($response['customer'])) {
 }
 
 $customer = $response['customer'];
+$id_default_group = $customer['id_default_group'] ?? 3; // Valor predeterminado si no existe
+$active = $customer['active'] ?? 1;
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $firstname = trim($_POST['firstname']);
@@ -19,13 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($firstname) || empty($lastname) || empty($email)) {
         $error = "Todos los campos son obligatorios.";
     } else {
-        // Crear XML para la actualización (sin el campo 'passwd')
+        // Crear XML para la actualización
         $xml = new SimpleXMLElement('<prestashop/>');
         $customerXml = $xml->addChild('customer');
         $customerXml->addChild('id', $id);
         $customerXml->addChild('firstname', htmlspecialchars($firstname));
         $customerXml->addChild('lastname', htmlspecialchars($lastname));
         $customerXml->addChild('email', htmlspecialchars($email));
+        $customerXml->addChild('id_default_group', $id_default_group);
+        $customerXml->addChild('active', $active);
 
         // Enviar XML a la API
         $xml_data = $xml->asXML();

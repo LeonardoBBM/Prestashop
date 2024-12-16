@@ -1,102 +1,85 @@
 <?php
 include 'config.php';
 
-// Forzar la conversión a SimpleXML
-$response = simplexml_load_string(callAPI('customers'));
-
-// Crear un nuevo cliente si se envía el formulario
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $xml = <<<EOD
-<prestashop>
-  <customer>
-    <id_default_group>3</id_default_group>
-    <id_lang>1</id_lang>
-    <firstname>{$_POST['firstname']}</firstname>
-    <lastname>{$_POST['lastname']}</lastname>
-    <email>{$_POST['email']}</email>
-    <passwd>password123</passwd>
-    <active>1</active>
-  </customer>
-</prestashop>
-EOD;
-
-    callAPI('customers', 'POST', $xml);
-    header("Location: customers.php");
-    exit;
-}
-
-// Si el XML es válido, obtener los clientes
-$customers = [];
-if ($response && $response->customers) {
-    foreach ($response->customers->customer as $customer) {
-        // Realizar una nueva solicitud para cada cliente
-        $customerDetails = simplexml_load_string(callAPI("customers/{$customer['id']}"));
-        if ($customerDetails && isset($customerDetails->customer)) {
-            $customers[] = $customerDetails->customer;
-        }
+// Función para obtener la lista de clientes o realizar una búsqueda específica
+function getCustomers($searchQuery = null) {
+    if ($searchQuery) {
+        // Realiza la búsqueda por correo electrónico o ID
+        $endpoint = "customers?filter[email]=$searchQuery|filter[id]=$searchQuery";
+    } else {
+        // Obtiene la lista completa de clientes
+        $endpoint = "customers";
     }
+
+    // Llamada a la API para obtener la lista de clientes
+    return makeApiRequest($endpoint, 'GET');
 }
+
+// Verifica si se realizó una búsqueda
+$searchQuery = $_POST['search_query'] ?? null;
+$response = getCustomers($searchQuery);
+$customers = isset($response['customers']) ? $response['customers'] : [];
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestión de Clientes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Lista de Clientes</title>
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <h1 class="mt-4 mb-4 text-center">Gestión de Clientes</h1>
+    <div class="container mt-4">
+        <h2>Lista de Clientes</h2>
 
-    <!-- Formulario para crear cliente -->
-    <h2>Crear Cliente</h2>
-    <form method="POST" class="mb-4">
-        <div class="row mb-3">
-            <div class="col">
-                <label class="form-label">Nombre:</label>
-                <input type="text" name="firstname" class="form-control" required>
-            </div>
-            <div class="col">
-                <label class="form-label">Apellido:</label>
-                <input type="text" name="lastname" class="form-control" required>
-            </div>
-            <div class="col">
-                <label class="form-label">Email:</label>
-                <input type="email" name="email" class="form-control" required>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Crear Cliente</button>
-    </form>
+        <!-- Botón para crear un nuevo cliente -->
+        <a href="customer_create.php" class="btn btn-primary mb-3">Crear Nuevo Cliente</a>
 
-    <!-- Tabla de clientes -->
-    <h2>Lista de Clientes</h2>
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Email</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($customers)): ?>
-                <?php foreach ($customers as $customer): ?>
+        <!-- Formulario de consulta de clientes -->
+        <form method="post" class="form-inline mb-3">
+            <div class="form-group">
+                <input type="text" class="form-control" name="search_query" placeholder="Buscar por ID o correo" required>
+            </div>
+            <button type="submit" class="btn btn-secondary ml-2">Consultar</button>
+        </form>
+
+        <!-- Tabla de clientes -->
+        <table class="table table-bordered">
+            <thead>
                 <tr>
-                    <td><?= $customer->id ?></td>
-                    <td><?= $customer->firstname ?></td>
-                    <td><?= $customer->lastname ?></td>
-                    <td><?= $customer->email ?></td>
+                    <th>ID</th>
+                    <th>Nombre Completo</th>
+                    <th>Correo Electrónico</th>
+                    <th>Teléfono</th>
+                    <th>Fecha de Registro</th>
+                    <th>Género</th>
+                    <th>Acciones</th>
                 </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="4" class="text-center">No se encontraron clientes</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                <?php if (!empty($customers)): ?>
+                    <?php foreach ($customers as $customer): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($customer['id']); ?></td>
+                            <td><?= htmlspecialchars($customer['firstname']) . ' ' . htmlspecialchars($customer['lastname']); ?></td>
+                            <td><?= htmlspecialchars($customer['email']); ?></td>
+                            <td><?= htmlspecialchars($customer['phone'] ?? 'N/A'); ?></td>
+                            <td><?= htmlspecialchars($customer['date_add']); ?></td>
+                            <td><?= htmlspecialchars($customer['id_gender'] == 1 ? 'Hombre' : ($customer['id_gender'] == 2 ? 'Mujer' : 'Otro')); ?></td>
+                            <td>
+                                <a href="customer_view.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-info btn-sm">Ver</a>
+                                <a href="customer_edit.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-warning btn-sm">Editar</a>
+                                <a href="customer_delete.php?id=<?= htmlspecialchars($customer['id']); ?>" class="btn btn-danger btn-sm">Eliminar</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="text-center">No se encontraron clientes.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </body>
 </html>
+
